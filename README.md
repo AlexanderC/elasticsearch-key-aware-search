@@ -3,6 +3,7 @@ es-suche
 
 An example ElasticSearch plugin implementation which performs search and expose a web service endpoint at "/suche?q=&lt;Query_String>"
 
+Sept 2nd 2014: We developped this ES plugin for the arte RFP.
 
 ### Installation
 
