@@ -9,6 +9,7 @@ import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryStringQueryBuilder;
+import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.rest.*;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -19,49 +20,63 @@ import static org.elasticsearch.rest.RestStatus.OK;
 
 public class KeyAwareSearchRestHandler extends BaseRestHandler {
 
-  @Inject
-  public KeyAwareSearchRestHandler(Settings settings, Client client, RestController controller) {
-    super(settings, client);
+    public static final String QUERY_PARAM = "q";
+    public static final String FROM_PARAM = "from";
+    public static final String SIZE_PARAM = "size";
+    public static final String KEY_PARAM = "_key";
+    public static final Integer DEFAULT_SIZE = 10;
 
-    controller.registerHandler(GET, "/_kas/{index}", this);
-  }
+    @Inject
+    public KeyAwareSearchRestHandler(Settings settings, Client client, RestController controller) {
+        super(settings, client);
 
-  @Override
-  public void handleRequest(final RestRequest request, final RestChannel channel) {
-    String[] indices = Strings.splitStringByCommaToArray(request.param("index"));
-    SearchRequest searchRequest = new SearchRequest(indices);
+        controller.registerHandler(GET, "/_kas/{index}", this);
+    }
 
-    String key = request.param("_key");
+    @Override
+    public void handleRequest(final RestRequest request, final RestChannel channel) {
+        String[] indices = Strings.splitStringByCommaToArray(request.param("index"));
+        SearchRequest searchRequest = new SearchRequest(indices);
 
-    QueryStringQueryBuilder qBuilder = QueryBuilders.queryString(request.param("q"));
-    qBuilder.analyzer("standard");
+        String _key = request.param(KeyAwareSearchRestHandler.KEY_PARAM);
+        String query = request.param(KeyAwareSearchRestHandler.QUERY_PARAM);
+        Integer from = request.paramAsInt(KeyAwareSearchRestHandler.FROM_PARAM, 0);
+        Integer size = request.paramAsInt(KeyAwareSearchRestHandler.SIZE_PARAM, KeyAwareSearchRestHandler.DEFAULT_SIZE);
 
-    SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-    sourceBuilder.query(qBuilder);
-    searchRequest.extraSource(sourceBuilder);
+        TermQueryBuilder keyQuery = QueryBuilders.termQuery(KeyAwareSearchRestHandler.KEY_PARAM, _key);
+        QueryStringQueryBuilder queryBuilder = QueryBuilders.queryString(query);
 
-    client.search(searchRequest, new ActionListener<SearchResponse>() {
-      @Override
-      public void onResponse(SearchResponse searchResponse) {
-        SearchHits hits = searchResponse.getHits();
-        StringBuilder sb = new StringBuilder();
-        sb.append("{");
-        sb.append("\"total_hits\": ").append(hits.getTotalHits()).append(",");
-        sb.append("\"hits\": [\n");
+        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
 
-        for (SearchHit hit : hits) {
-          sb.append(hit.sourceAsString()).append(",\n");
-        }
+        //sourceBuilder.query(keyQuery);
+        sourceBuilder.query(queryBuilder);
+        sourceBuilder.from(from);
+        sourceBuilder.size(size);
 
-        sb.append("]\n}");
+        searchRequest.extraSource(sourceBuilder);
 
-        channel.sendResponse(new StringRestResponse(OK, sb.toString()));
-      }
+        client.search(searchRequest, new ActionListener<SearchResponse>() {
+            @Override
+            public void onResponse(SearchResponse searchResponse) {
+                SearchHits hits = searchResponse.getHits();
+                StringBuilder sb = new StringBuilder();
+                sb.append("{");
+                sb.append("\"total_hits\": ").append(hits.getTotalHits()).append(",");
+                sb.append("\"hits\": [\n");
 
-      @Override
-      public void onFailure(Throwable throwable) {
-        channel.sendResponse(new StringRestResponse(OK, "Failed to search"));
-      }
-    });
-  }
+                for (SearchHit hit : hits) {
+                    sb.append(hit.sourceAsString()).append(",\n");
+                }
+
+                sb.append("]\n}");
+
+                channel.sendResponse(new StringRestResponse(OK, sb.toString()));
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                channel.sendResponse(new StringRestResponse(OK, "Failed to search"));
+            }
+        });
+    }
 }
