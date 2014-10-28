@@ -23,6 +23,11 @@ All the entries would be filtered using the `_key` provided using the `_kas_key`
 - `_kas_key` field MUST be `not_analyzed`
 
 
+### Requirements
+
+- ElasticSearch 1.3.x
+- Apache Lucene 4.9.x (mainly depends on ES version)
+
 ### Installation instructions
 
 `bin/plugin --url file:%ROOT%/builds/es-kas-0.1-SNAPSHOT-plugin.zip --install es-kas --verbose`
