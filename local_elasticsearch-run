@@ -1,0 +1,7 @@
+#!/bin/bash
+
+binary=elasticsearch
+log_path=/var/log/elasticsearch
+config=/usr/local/opt/elasticsearch/config/elasticsearch.yml
+
+$binary  -Des.logger.level=DEBUG -Dpath.logs=$log_path --config=$config

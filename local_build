@@ -1,0 +1,5 @@
+#!/bin/bash
+
+maven=mvn
+
+$maven clean package

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+./local_build
+./local_install
+./local_elasticsearch-run

@@ -34,49 +34,57 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
     }
 
     @Override
-    public void handleRequest(final RestRequest request, final RestChannel channel) {
-        String[] indices = Strings.splitStringByCommaToArray(request.param("index"));
+    protected void handleRequest(RestRequest restRequest, final RestChannel restChannel, Client client) throws Exception {
+        String[] indices = Strings.splitStringByCommaToArray(restRequest.param("index", "_all"));
         SearchRequest searchRequest = new SearchRequest(indices);
 
-        String _key = request.param(KeyAwareSearchRestHandler.KEY_PARAM);
-        String query = request.param(KeyAwareSearchRestHandler.QUERY_PARAM);
-        Integer from = request.paramAsInt(KeyAwareSearchRestHandler.FROM_PARAM, 0);
-        Integer size = request.paramAsInt(KeyAwareSearchRestHandler.SIZE_PARAM, KeyAwareSearchRestHandler.DEFAULT_SIZE);
+        String _key = restRequest.param(KEY_PARAM);
+        String query = restRequest.param(QUERY_PARAM);
+        Integer from = restRequest.paramAsInt(FROM_PARAM, 0);
+        Integer size = restRequest.paramAsInt(SIZE_PARAM, DEFAULT_SIZE);
 
-        TermQueryBuilder keyQuery = QueryBuilders.termQuery(KeyAwareSearchRestHandler.KEY_PARAM, _key);
-        QueryStringQueryBuilder queryBuilder = QueryBuilders.queryString(query);
+        if(_key.isEmpty()) {
+            restChannel.sendResponse(new BytesRestResponse(OK,
+                    "You MUST provide the key as '%' request parameter".replace("%", KEY_PARAM)
+            ));
+        } else {
+            TermQueryBuilder keyQuery = QueryBuilders.termQuery(KEY_PARAM, _key);
+            QueryStringQueryBuilder queryBuilder = QueryBuilders.queryString(query);
 
-        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+            SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
 
-        //sourceBuilder.query(keyQuery);
-        sourceBuilder.query(queryBuilder);
-        sourceBuilder.from(from);
-        sourceBuilder.size(size);
+            //sourceBuilder.query(keyQuery);
+            sourceBuilder.query(queryBuilder);
+            sourceBuilder.from(from);
+            sourceBuilder.size(size);
 
-        searchRequest.extraSource(sourceBuilder);
+            searchRequest.extraSource(sourceBuilder);
 
-        client.search(searchRequest, new ActionListener<SearchResponse>() {
-            @Override
-            public void onResponse(SearchResponse searchResponse) {
-                SearchHits hits = searchResponse.getHits();
-                StringBuilder sb = new StringBuilder();
-                sb.append("{");
-                sb.append("\"total_hits\": ").append(hits.getTotalHits()).append(",");
-                sb.append("\"hits\": [\n");
+            client.search(searchRequest, new ActionListener<SearchResponse>() {
+                @Override
+                public void onResponse(SearchResponse searchResponse) {
+                    SearchHits hits = searchResponse.getHits();
 
-                for (SearchHit hit : hits) {
-                    sb.append(hit.sourceAsString()).append(",\n");
+                    StringBuilder sb = new StringBuilder();
+
+                    sb.append("{");
+                    sb.append("\"total_hits\": ").append(hits.getTotalHits()).append(",");
+                    sb.append("\"hits\": [\n");
+
+                    for (SearchHit hit : hits) {
+                        sb.append(hit.sourceAsString()).append(",\n");
+                    }
+
+                    sb.append("]\n}");
+
+                    restChannel.sendResponse(new BytesRestResponse(OK, sb.toString()));
                 }
 
-                sb.append("]\n}");
-
-                channel.sendResponse(new StringRestResponse(OK, sb.toString()));
-            }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-                channel.sendResponse(new StringRestResponse(OK, "Failed to search"));
-            }
-        });
+                @Override
+                public void onFailure(Throwable throwable) {
+                    restChannel.sendResponse(new BytesRestResponse(OK, throwable.getMessage()));
+                }
+            });
+        }
     }
 }
