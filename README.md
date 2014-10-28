@@ -7,7 +7,7 @@ It also secures ES by allowing only GET method and queries without aggregations 
 
 ### Request Format
 
-All the entries would be filtered using the `_key` provided using the `_kas_key` field...
+All the entries would be filtered by the `_key` parameter provided using the `_kas_key` field from mapping...
 
 `<SERVER_PATH>`/_kas/`<INDEX_NAME>`?_key=`<KEY_STRING>`[&size=`<SIZE_INTEGER>`&from=`<OFFSET_INTEGER>`&q=`<QUERY_STRING>`]
 
