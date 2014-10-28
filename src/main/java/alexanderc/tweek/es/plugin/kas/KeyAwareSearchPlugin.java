@@ -6,6 +6,9 @@ import org.elasticsearch.plugins.AbstractPlugin;
 
 import java.util.Collection;
 
+/**
+ * Created by AlexanderC on 10/28/14.
+ */
 public class KeyAwareSearchPlugin extends AbstractPlugin {
     @Override
     public String name() {
