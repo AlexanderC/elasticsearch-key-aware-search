@@ -1,4 +1,4 @@
-package tv.tweek.es.plugin.suche;
+package alexanderc.tweek.es.plugin.kas;
 
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.search.SearchRequest;
@@ -17,22 +17,21 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import static org.elasticsearch.rest.RestRequest.Method.GET;
 import static org.elasticsearch.rest.RestStatus.OK;
 
-/**
- * Created by hasan on 4/16/14.
- */
-public class SucheRestHandler extends BaseRestHandler {
+public class KeyAwareSearchRestHandler extends BaseRestHandler {
 
   @Inject
-  public SucheRestHandler(Settings settings, Client client, RestController controller) {
+  public KeyAwareSearchRestHandler(Settings settings, Client client, RestController controller) {
     super(settings, client);
 
-    controller.registerHandler(GET, "/{index}/suche", this);
+    controller.registerHandler(GET, "/_kas/{index}", this);
   }
 
   @Override
   public void handleRequest(final RestRequest request, final RestChannel channel) {
     String[] indices = Strings.splitStringByCommaToArray(request.param("index"));
     SearchRequest searchRequest = new SearchRequest(indices);
+
+    String key = request.param("_key");
 
     QueryStringQueryBuilder qBuilder = QueryBuilders.queryString(request.param("q"));
     qBuilder.analyzer("standard");

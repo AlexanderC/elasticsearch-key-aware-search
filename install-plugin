@@ -1,7 +1,1 @@
-ES_ROOT="/Applications/elasticsearch-1.1.0"
-
-echo "Removing existing plugin"
-$ES_ROOT/bin/plugin --remove es-suche ; true
-
-echo "Installing new version"
-$ES_ROOT/bin/plugin --url file:///`pwd`/target/releases/es-suche-1.0-SNAPSHOT-plugin.zip --install es-suche
+# TODO
