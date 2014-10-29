@@ -11,7 +11,7 @@ import java.util.Iterator;
  * Created by AlexanderC on 10/28/14.
  */
 public class ResultResponse extends BaseResponse {
-    public ResultResponse(SearchResponse searchResponse) {
+    public ResultResponse(final SearchResponse searchResponse, final Integer offset, final Integer limit) {
         Iterator<SearchHit> hits = searchResponse.getHits().iterator();
 
         String[] collection = Strings.EMPTY_ARRAY;
@@ -23,8 +23,11 @@ public class ResultResponse extends BaseResponse {
         StringBuilder sb = new StringBuilder();
 
         sb.append("{");
-        sb.append("\"total_hits\": ").append(searchResponse.getHits().getTotalHits()).append(",");
-        sb.append("\"hits\": [");
+        sb.append("\"pagination\":{\"count\":%1,\"limit\":%2,\"offset\":%3},"
+                        .replace("%1", Long.toString(searchResponse.getHits().getTotalHits()))
+                        .replace("%2", Integer.toString(limit))
+                        .replace("%3", Integer.toString(offset)));
+        sb.append("\"results\":[");
         sb.append(Strings.arrayToCommaDelimitedString(collection));
         sb.append("]}");
 
