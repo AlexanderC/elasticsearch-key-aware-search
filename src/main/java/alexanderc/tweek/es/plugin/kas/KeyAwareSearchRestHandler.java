@@ -25,6 +25,7 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
     public static final String KEY_PARAM = "_key";
     public static final Integer DEFAULT_SIZE = 10;
     public static final String KEY_FIELD = "_kas_key";
+    public static final String DEFAULT_KEY = "";
 
     @Inject
     public KeyAwareSearchRestHandler(Settings settings, Client client, RestController controller) {
@@ -38,7 +39,7 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
         String[] indices = Strings.splitStringByCommaToArray(restRequest.param("index", "_all"));
         SearchRequest searchRequest = new SearchRequest(indices);
 
-        String _key = restRequest.param(KEY_PARAM, "");
+        String _key = restRequest.param(KEY_PARAM, DEFAULT_KEY);
         String query = restRequest.param(QUERY_PARAM, "");
         Integer from = restRequest.paramAsInt(FROM_PARAM, 0);
         Integer size = restRequest.paramAsInt(SIZE_PARAM, DEFAULT_SIZE);
@@ -51,13 +52,14 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
             size = DEFAULT_SIZE;
         }
 
-        if(_key.isEmpty()) {
-            RestError error = new RestError(
-                    "You MUST provide the key as '%' request parameter".replace("%", KEY_PARAM),
-                    RestStatus.BAD_REQUEST
-            );
-            restChannel.sendResponse(error);
-        } else {
+        // allow skipping the key parameter
+//        if(_key.isEmpty()) {
+//            RestError error = new RestError(
+//                    "You MUST provide the key as '%' request parameter".replace("%", KEY_PARAM),
+//                    RestStatus.BAD_REQUEST
+//            );
+//            restChannel.sendResponse(error);
+//        } else {
             TermQueryBuilder keyQuery = QueryBuilders.termQuery(KEY_FIELD, _key);
 
             QueryBuilder queryBuilder = query.isEmpty()
@@ -97,6 +99,6 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
                     restChannel.sendResponse(new RestError(throwable.getMessage(), RestStatus.INTERNAL_SERVER_ERROR));
                 }
             });
-        }
+//        }
     }
 }
