@@ -20,7 +20,7 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
     public static final String QUERY_PARAM = "q";
     public static final String FROM_PARAM = "offset";
     public static final String SIZE_PARAM = "limit";
-    public static final String KEY_PARAM = "key";
+    public static final String KEY_PARAM = "_key";
     public static final Integer DEFAULT_SIZE = 10;
     public static final String KEY_FIELD = "_kas_key";
     public static final String ALL_INDEXES = "_all";
