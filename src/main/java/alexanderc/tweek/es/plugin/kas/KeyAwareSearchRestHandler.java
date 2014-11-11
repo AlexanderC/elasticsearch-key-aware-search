@@ -49,16 +49,10 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
 
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
         sourceBuilder.fetchSource(null, Strings.addStringToArray(Strings.EMPTY_ARRAY, KEY_FIELD));
+        sourceBuilder.query(query.isEmpty() ? QueryBuilders.matchAllQuery() : QueryBuilders.queryString(query));
+        sourceBuilder.postFilter(FilterBuilders.termFilter(KEY_FIELD, _key));
         sourceBuilder.from(from);
         sourceBuilder.size(size);
-
-        if(query.isEmpty()) {
-            sourceBuilder.query(QueryBuilders.termQuery(KEY_FIELD, _key));
-        } else {
-            sourceBuilder.query(QueryBuilders.queryString(query));
-            sourceBuilder.postFilter(FilterBuilders.termFilter(KEY_FIELD, _key));
-        }
-
         searchRequest.extraSource(sourceBuilder);
 
         if(explain) {
