@@ -1,5 +1,6 @@
 package alexanderc.tweek.es.plugin.kas;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -24,6 +25,7 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
     public static final Integer DEFAULT_SIZE = 10;
     public static final String KEY_FIELD = "_kas_key";
     public static final String ALL_INDEXES = "_all";
+    public static final String EXPLAIN_PARAM = "explain";
 
     @Inject
     public KeyAwareSearchRestHandler(Settings settings, Client client, RestController controller) {
@@ -37,6 +39,7 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
         String[] indices = Strings.splitStringByCommaToArray(restRequest.param("index", ALL_INDEXES));
         SearchRequest searchRequest = new SearchRequest(indices);
 
+        Boolean explain = restRequest.paramAsBoolean(EXPLAIN_PARAM, false);
         String _key = restRequest.param(KEY_PARAM, "");
         String query = restRequest.param(QUERY_PARAM, "");
         Integer from = restRequest.paramAsInt(FROM_PARAM, 0);
@@ -58,24 +61,28 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
 
         searchRequest.extraSource(sourceBuilder);
 
-        // allow accessing from inner class
-        final Integer resultFrom = from;
-        final Integer resultSize = size;
+        if(explain) {
+            restChannel.sendResponse(new ExplainResponse(sourceBuilder));
+        } else {
+            // allow accessing from inner class
+            final Integer resultFrom = from;
+            final Integer resultSize = size;
 
-        client.search(searchRequest, new ActionListener<SearchResponse>() {
-            @Override
-            public void onResponse(SearchResponse searchResponse) {
-                if(!searchResponse.status().equals(RestStatus.OK)) {
-                    restChannel.sendResponse(new RestError("Search failed.", RestStatus.INTERNAL_SERVER_ERROR));
-                } else {
-                    restChannel.sendResponse(new ResultResponse(searchResponse, resultFrom, resultSize));
+            client.search(searchRequest, new ActionListener<SearchResponse>() {
+                @Override
+                public void onResponse(SearchResponse searchResponse) {
+                    if(!searchResponse.status().equals(RestStatus.OK)) {
+                        restChannel.sendResponse(new RestError("Search failed.", RestStatus.INTERNAL_SERVER_ERROR));
+                    } else {
+                        restChannel.sendResponse(new ResultResponse(searchResponse, resultFrom, resultSize));
+                    }
                 }
-            }
 
-            @Override
-            public void onFailure(Throwable throwable) {
-                restChannel.sendResponse(new RestError(throwable.getMessage(), RestStatus.INTERNAL_SERVER_ERROR));
-            }
-        });
+                @Override
+                public void onFailure(Throwable throwable) {
+                    restChannel.sendResponse(new RestError(throwable.getMessage(), RestStatus.INTERNAL_SERVER_ERROR));
+                }
+            });
+        }
     }
 }
