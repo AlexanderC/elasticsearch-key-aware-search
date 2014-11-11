@@ -25,7 +25,8 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
     public static final String KEY_PARAM = "_key";
     public static final Integer DEFAULT_SIZE = 10;
     public static final String KEY_FIELD = "_kas_key";
-    public static final String DEFAULT_KEY = "";
+    public static final String DEFAULT_KEY = "_";
+    public static final String ALL_INDEXES = "_all";
 
     @Inject
     public KeyAwareSearchRestHandler(Settings settings, Client client, RestController controller) {
@@ -36,7 +37,7 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
 
     @Override
     protected void handleRequest(RestRequest restRequest, final RestChannel restChannel, Client client) throws Exception {
-        String[] indices = Strings.splitStringByCommaToArray(restRequest.param("index", "_all"));
+        String[] indices = Strings.splitStringByCommaToArray(restRequest.param("index", ALL_INDEXES));
         SearchRequest searchRequest = new SearchRequest(indices);
 
         String _key = restRequest.param(KEY_PARAM, DEFAULT_KEY);
