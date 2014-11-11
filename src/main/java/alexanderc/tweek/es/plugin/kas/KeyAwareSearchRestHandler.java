@@ -77,7 +77,7 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
             sourceBuilder.size(size);
 
             sourceBuilder.query(queryBuilder);
-            sourceBuilder.postFilter(keyQuery.toString());
+            //sourceBuilder.postFilter(keyQuery.toString());
 
             searchRequest.extraSource(sourceBuilder);
 
