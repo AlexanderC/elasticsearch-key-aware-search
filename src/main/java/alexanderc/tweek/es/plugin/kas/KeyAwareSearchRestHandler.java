@@ -1,7 +1,5 @@
 package alexanderc.tweek.es.plugin.kas;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
-import org.apache.lucene.search.FilteredQuery;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -22,9 +20,9 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
     public static final String QUERY_PARAM = "q";
     public static final String FROM_PARAM = "offset";
     public static final String SIZE_PARAM = "limit";
-    public static final String KEY_PARAM = "_key";
+    public static final String KEY_PARAM = "key";
     public static final Integer DEFAULT_SIZE = 10;
-    public static final String KEY_FIELD = "_kas_key";
+    public static final String KEY_FIELD = "_kaskey";
     public static final String ALL_INDEXES = "_all";
     public static final String EXPLAIN_PARAM = "explain";
 
@@ -41,7 +39,7 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
         SearchRequest searchRequest = new SearchRequest(indices);
 
         Boolean explain = restRequest.paramAsBoolean(EXPLAIN_PARAM, false);
-        String _key = restRequest.param(KEY_PARAM, "");
+        String key = restRequest.param(KEY_PARAM, "");
         String query = restRequest.param(QUERY_PARAM, "");
         Integer from = restRequest.paramAsInt(FROM_PARAM, 0);
         from = from < 0 ? 0 : from;
@@ -50,7 +48,7 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
 
         FilteredQueryBuilder filteredQuery = QueryBuilders.filteredQuery(
                 query.isEmpty() ? QueryBuilders.matchAllQuery() : QueryBuilders.queryString(query),
-                FilterBuilders.termFilter(KEY_FIELD, _key)
+                key.isEmpty() ? FilterBuilders.missingFilter(KEY_FIELD) : FilterBuilders.termFilter(KEY_FIELD, key)
         );
 
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
