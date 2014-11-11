@@ -17,25 +17,26 @@ import static org.elasticsearch.rest.RestRequest.Method.GET;
  */
 public class KeyAwareSearchRestHandler extends BaseRestHandler {
 
+    public static final String INDEX_PARAM = "index";
     public static final String QUERY_PARAM = "q";
     public static final String FROM_PARAM = "offset";
     public static final String SIZE_PARAM = "limit";
     public static final String KEY_PARAM = "_key";
+    public static final String EXPLAIN_PARAM = "explain";
     public static final Integer DEFAULT_SIZE = 10;
     public static final String KEY_FIELD = "_kas_key";
     public static final String ALL_INDEXES = "_all";
-    public static final String EXPLAIN_PARAM = "explain";
 
     @Inject
     public KeyAwareSearchRestHandler(Settings settings, Client client, RestController controller) {
         super(settings, client);
 
-        controller.registerHandler(GET, "/_kas/{index}", this);
+        controller.registerHandler(GET, "/_kas/{" + INDEX_PARAM + "}", this);
     }
 
     @Override
     protected void handleRequest(RestRequest restRequest, final RestChannel restChannel, Client client) throws Exception {
-        String[] indices = Strings.splitStringByCommaToArray(restRequest.param("index", ALL_INDEXES));
+        String[] indices = Strings.splitStringByCommaToArray(restRequest.param(INDEX_PARAM, ALL_INDEXES));
         SearchRequest searchRequest = new SearchRequest(indices);
 
         Boolean explain = restRequest.paramAsBoolean(EXPLAIN_PARAM, false);
