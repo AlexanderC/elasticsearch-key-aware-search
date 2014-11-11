@@ -1,6 +1,7 @@
 package alexanderc.tweek.es.plugin.kas;
 
 import com.sun.org.apache.xpath.internal.operations.Bool;
+import org.apache.lucene.search.FilteredQuery;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -47,10 +48,14 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
         Integer size = restRequest.paramAsInt(SIZE_PARAM, DEFAULT_SIZE);
         size = size <= 0 ? DEFAULT_SIZE : size;
 
+        FilteredQueryBuilder filteredQuery = QueryBuilders.filteredQuery(
+                query.isEmpty() ? QueryBuilders.matchAllQuery() : QueryBuilders.queryString(query),
+                FilterBuilders.termFilter(KEY_FIELD, _key)
+        );
+
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
         sourceBuilder.fetchSource(null, Strings.addStringToArray(Strings.EMPTY_ARRAY, KEY_FIELD));
-        sourceBuilder.query(query.isEmpty() ? QueryBuilders.matchAllQuery() : QueryBuilders.queryString(query));
-        sourceBuilder.postFilter(FilterBuilders.termFilter(KEY_FIELD, _key));
+        sourceBuilder.query(filteredQuery);
         sourceBuilder.from(from);
         sourceBuilder.size(size);
         searchRequest.extraSource(sourceBuilder);
