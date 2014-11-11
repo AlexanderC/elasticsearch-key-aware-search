@@ -3,3 +3,5 @@
 maven=mvn
 
 $maven clean package
+
+cp -R ./target/releases/ ./builds/
