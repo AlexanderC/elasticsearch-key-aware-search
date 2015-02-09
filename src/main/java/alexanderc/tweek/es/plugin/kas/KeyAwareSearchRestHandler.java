@@ -22,7 +22,8 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
     public static final String FROM_PARAM = "offset";
     public static final String SIZE_PARAM = "limit";
     public static final String KEY_PARAM = "_key";
-    public static final String EXPLAIN_PARAM = "explain";
+    public static final String EXPLAIN_PARAM = "_explain";
+    public static final String DEBUG_PARAM = "_debug";
     public static final Integer DEFAULT_SIZE = 10;
     public static final String KEY_FIELD = "_kas_key";
     public static final String ALL_INDEXES = "_all";
@@ -40,6 +41,7 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
         SearchRequest searchRequest = new SearchRequest(indices);
 
         Boolean explain = restRequest.paramAsBoolean(EXPLAIN_PARAM, false);
+        final Boolean debug = restRequest.paramAsBoolean(DEBUG_PARAM, false);
         String key = restRequest.param(KEY_PARAM, "");
         String query = restRequest.param(QUERY_PARAM, "");
         Integer from = restRequest.paramAsInt(FROM_PARAM, 0);
@@ -79,7 +81,7 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
 
                 @Override
                 public void onFailure(Throwable throwable) {
-                    restChannel.sendResponse(new RestError(throwable.getMessage(), RestStatus.INTERNAL_SERVER_ERROR));
+                    restChannel.sendResponse(RestError.fromThrowable(throwable, debug));
                 }
             });
         }

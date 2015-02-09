@@ -23,4 +23,14 @@ public class RestError extends BaseResponse {
         this.setBytes(responseObject.bytes());
         this.setStatus(status);
     }
+
+    public static RestError fromThrowable(Throwable throwable, Boolean debug) {
+        String error = throwable.getMessage();
+
+        if(debug) {
+            error = throwable.toString();
+        }
+
+        return new RestError(error, RestStatus.INTERNAL_SERVER_ERROR);
+    }
 }
