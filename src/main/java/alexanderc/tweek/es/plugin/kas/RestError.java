@@ -25,12 +25,16 @@ public class RestError extends BaseResponse {
     }
 
     public static RestError fromThrowable(Throwable throwable, Boolean debug) {
-        String error = throwable.getMessage();
+        StringBuilder error = new StringBuilder();
 
         if(debug) {
-            error = throwable.toString();
+            error.append(throwable.toString());
+            error.append("\n\n");
+            error.append(throwable.getStackTrace().toString());
+        } else {
+            error.append(throwable.getMessage());
         }
 
-        return new RestError(error, RestStatus.INTERNAL_SERVER_ERROR);
+        return new RestError(error.toString(), RestStatus.INTERNAL_SERVER_ERROR);
     }
 }
