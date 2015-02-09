@@ -29,7 +29,7 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
 
     @Inject
     public KeyAwareSearchRestHandler(Settings settings, Client client, RestController controller) {
-        super(settings, client);
+        super(settings, controller, client);
 
         controller.registerHandler(GET, "/_kas/{" + INDEX_PARAM + "}", this);
     }
@@ -53,7 +53,8 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
         );
 
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-        sourceBuilder.fetchSource(null, Strings.addStringToArray(Strings.EMPTY_ARRAY, KEY_FIELD));
+
+        sourceBuilder.fetchSource(null, KEY_FIELD);
         sourceBuilder.query(filteredQuery);
         sourceBuilder.from(from);
         sourceBuilder.size(size);
