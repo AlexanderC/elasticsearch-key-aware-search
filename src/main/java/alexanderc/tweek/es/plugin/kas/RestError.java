@@ -33,15 +33,15 @@ public class RestError extends BaseResponse {
 
             for (StackTraceElement traceElement : throwable.getStackTrace()) {
                 error.append('\n');
-                error.append("[File: ");
+                error.append("[");
                 error.append(traceElement.getFileName());
-                error.append(", Line: ");
+                error.append(":");
                 error.append(traceElement.getLineNumber());
                 error.append("] ");
                 error.append(traceElement.getClassName());
                 error.append(".");
                 error.append(traceElement.getMethodName());
-                error.append("([NATIVE])");
+                error.append("()");
             }
         } else {
             error.append(throwable.getMessage());
