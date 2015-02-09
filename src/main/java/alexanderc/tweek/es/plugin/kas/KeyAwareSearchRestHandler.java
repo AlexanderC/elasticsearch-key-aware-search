@@ -28,7 +28,7 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
     public static final String ALL_INDEXES = "_all";
 
     @Inject
-    public KeyAwareSearchRestHandler(Settings settings, Client client, RestController controller) {
+    public KeyAwareSearchRestHandler(Settings settings, RestController controller, Client client) {
         super(settings, controller, client);
 
         controller.registerHandler(GET, "/_kas/{" + INDEX_PARAM + "}", this);
