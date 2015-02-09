@@ -33,7 +33,7 @@ public class RestError extends BaseResponse {
 
             for (StackTraceElement traceElement : throwable.getStackTrace()) {
                 error.append('\n');
-                error.append(traceElement);
+                error.append(traceElement.toString());
             }
         } else {
             error.append(throwable.getMessage());
