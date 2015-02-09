@@ -25,11 +25,11 @@ All the entries would be filtered by the `_key` parameter provided using the `_k
 
 ### Requirements
 
-- ElasticSearch 1.3.x
+- ElasticSearch 1.4.2
 - Apache Lucene 4.9.x (mainly depends on ES version)
 
 ### Installation instructions
 
-`bin/plugin --url file:%ROOT%/builds/es-kas-0.1-SNAPSHOT-plugin.zip --install es-kas --verbose`
+`bin/plugin --url https://github.com/AlexanderC/elasticsearch-key-aware-search/blob/master/builds/es-kas-0.1-SNAPSHOT-plugin.zip?raw=true --install es-kas --verbose`
 
 To uninstall it run: `bin/plugin --remove es-kas`
