@@ -29,8 +29,12 @@ public class RestError extends BaseResponse {
 
         if(debug) {
             error.append(throwable.toString());
-            error.append("\n\n");
-            error.append(throwable.getStackTrace().toString());
+            error.append('\n');
+
+            for (StackTraceElement traceElement : throwable.getStackTrace()) {
+                error.append('\n');
+                error.append(traceElement);
+            }
         } else {
             error.append(throwable.getMessage());
         }
