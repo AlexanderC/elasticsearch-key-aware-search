@@ -9,13 +9,13 @@ It also secures ES by allowing only GET method and queries without aggregations 
 
 All the entries would be filtered by the `_key` parameter provided using the `_kas_key` field from mapping...
 
-`<SERVER_PATH>`/_kas/`<INDEX_NAME>`?_key=`<KEY_STRING>`[&size=`<SIZE_INTEGER>`&from=`<OFFSET_INTEGER>`&q=`<QUERY_STRING>`]
+`<SERVER_PATH>`/_kas/`<INDEX_NAME>`?_key=`<KEY_STRING>`[&_limit=`<SIZE_INTEGER>`&_offset=`<OFFSET_INTEGER>`&q=`<QUERY_STRING>`][&_explain&_debug]
 
 ### Defaults
 
-    'q' - by default query is 'match_all'
-    'size' - by default query is 10
-    'from' - by default is 0
+    `q` - by default query is `match_all`
+    `_limit` - by default query is 10 (mapped to `size`)
+    `_offset` - by default is 0 (mapped to `from`)
     
 ### Be aware!
     
