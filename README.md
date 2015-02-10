@@ -11,11 +11,13 @@ All the entries would be filtered by the `_key` parameter provided using the `_k
 
 `<SERVER_PATH>`/_kas/`<INDEX_NAME>`?_key=`<KEY_STRING>`[&_limit=`<SIZE_INTEGER>`&_offset=`<OFFSET_INTEGER>`&q=`<QUERY_STRING>`][&_explain&_debug]
 
-### Defaults
+### Options
 
-    `q` - by default query is `match_all`
-    `_limit` - by default query is 10 (mapped to `size`)
-    `_offset` - by default is 0 (mapped to `from`)
+- `q` - by default query is `match_all`
+- `_limit` - by default query is 10 (mapped to `size`)
+- `_offset` - by default is 0 (mapped to `from`)
+- `_explain` - dump native query
+- `debug` - adds exceptions stack trace to the error response
     
 ### Be aware!
     
