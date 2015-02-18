@@ -18,7 +18,10 @@ public class ResultResponse extends BaseResponse {
 
         while(hits.hasNext()) {
             collection.append(((SearchHit) hits.next()).getSourceAsString());
-            collection.append(',');
+
+            if(hits.hasNext()) {
+                collection.append(',');
+            }
         }
 
         StringBuilder sb = new StringBuilder();
@@ -29,7 +32,7 @@ public class ResultResponse extends BaseResponse {
                         .replace("%2", Integer.toString(limit))
                         .replace("%3", Integer.toString(offset)));
         sb.append("\"results\":[");
-        sb.append(Strings.trimLeadingCharacter(collection.toString(), ','));
+        sb.append(collection.toString());
         sb.append("]}");
 
         StringAndBytesText responseObject = new StringAndBytesText(sb.toString());
