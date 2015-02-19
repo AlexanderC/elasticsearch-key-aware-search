@@ -49,9 +49,14 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
         Integer size = restRequest.paramAsInt(SIZE_PARAM, DEFAULT_SIZE);
         size = size <= 0 ? DEFAULT_SIZE : size;
 
+        TermFilterBuilder keyFilter = FilterBuilders.termFilter(KEY_FIELD, key);
+
         FilteredQueryBuilder filteredQuery = QueryBuilders.filteredQuery(
                 query.isEmpty() ? QueryBuilders.matchAllQuery() : QueryBuilders.queryString(query),
-                key.isEmpty() ? FilterBuilders.missingFilter(KEY_FIELD) : FilterBuilders.termFilter(KEY_FIELD, key)
+                key.isEmpty() ? FilterBuilders.orFilter(
+                        FilterBuilders.missingFilter(KEY_FIELD),
+                        keyFilter
+                ) : keyFilter
         );
 
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
