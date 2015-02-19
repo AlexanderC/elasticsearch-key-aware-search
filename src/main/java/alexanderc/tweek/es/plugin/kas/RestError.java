@@ -1,6 +1,7 @@
 package alexanderc.tweek.es.plugin.kas;
 
 import org.elasticsearch.common.text.StringAndBytesText;
+import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.rest.*;
 
 /**
@@ -10,7 +11,13 @@ public class RestError extends BaseResponse {
     public RestError(final String message, RestStatus status) {
         StringBuilder sb = new StringBuilder();
 
-        String codePrefix = Integer.toString(status.getStatus()).substring(0, 1);
+        String codePrefix = "2";
+
+        if (500 <= status.getStatus() && status.getStatus() <= 599) {
+            codePrefix = "3";
+        } else if (400 <= status.getStatus() && status.getStatus() <= 499) {
+            codePrefix = "4";
+        }
 
         sb.append("{");
         sb.append("\"error\":true,");
@@ -47,6 +54,12 @@ public class RestError extends BaseResponse {
             error.append(throwable.getMessage());
         }
 
-        return new RestError(error.toString(), RestStatus.INTERNAL_SERVER_ERROR);
+        RestStatus restStatus = RestStatus.INTERNAL_SERVER_ERROR;
+
+        if(throwable instanceof ElasticsearchException) {
+            restStatus = ((ElasticsearchException) throwable).status();
+        }
+
+        return new RestError(error.toString(), restStatus);
     }
 }
