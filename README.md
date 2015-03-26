@@ -19,10 +19,11 @@ All the entries would be filtered by the `_key` parameter provided using the `_k
 - `_sort` (aka `sort`) - by default none (comma separated, `+|-field` syntax)
 - `_explain` - dump native query
 - `_debug` - adds exceptions stack trace to the error response
+- `_fields` - define the fields to be returned in response object (by default all).
     
 ### Be aware!
     
-- `GET` is the only allowed method    
+- `GET` is the only allowed method
 - `_kas_key` field MUST be `not_analyzed`
 
 

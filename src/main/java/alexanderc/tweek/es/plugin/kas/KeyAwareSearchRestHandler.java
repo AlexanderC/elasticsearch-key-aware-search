@@ -10,6 +10,7 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.rest.*;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.fetch.source.FetchSourceContext;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 
@@ -28,10 +29,20 @@ import static org.elasticsearch.rest.RestRequest.Method.GET;
  *
  * @see http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-uri-request.html
  *
- * @example http://localhost:9200/_kas/search/?_limit=5&_offset=1&_filter=username:j&_sort=+employee.workforceid,-employee.company_number&_explain&_token=65a5f38bf80914019b55a03f78c4
+ * @example http://localhost:9200/_kas/search/
+ *              ?_fields=username,company
+ *              &_limit=5
+ *              &_offset=1
+ *              &_filter=username:eistrati
+ *              &_sort=+employee.workforceid,-employee.company_number
+ *              &_token=65a5f38bf80914019b55a03f78c4
+ *              &_explain
+ *              &_debug
  */
 public class KeyAwareSearchRestHandler extends BaseRestHandler {
+
     // _filter=name:Alex,surname:C - Set matching phrase (see Query String Query Syntax)
+    // examples: http://www.elastic.co/guide/en/elasticsearch/reference/1.x/query-dsl-query-string-query.html
     public static final String QUERY_PARAM = "_filter";
     // _sort=+likes_total,-inactivity_count (order is important) - Sort desc.(-) or asc.(+), default asc.
     public static final String SORT_PARAM = "_sort";
@@ -41,6 +52,8 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
     public static final String SIZE_PARAM = "_limit";
     // _token=13946|eistrati|e343d3aab6339f5kjshbdgi87gsghkge87a167c421c2d047ac551 - Auth token used
     public static final String KEY_PARAM = "_token";
+    // _fields - Specify certain fields to be selected
+    public static final String FIELDS_PARAM = "_fields";
     // _explain - Dumps source builder
     public static final String EXPLAIN_PARAM = "_explain";
     // _debug - Dumps debug trace on error
@@ -65,9 +78,10 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
 
         Boolean explain = restRequest.paramAsBoolean(EXPLAIN_PARAM, false);
         final Boolean debug = restRequest.paramAsBoolean(DEBUG_PARAM, false);
-        String key = restRequest.param(KEY_PARAM, "");
-        String query = restRequest.param(QUERY_PARAM, "");
-        String sort = restRequest.param(SORT_PARAM, "");
+        String fields = restRequest.param(FIELDS_PARAM, "").trim();
+        String key = restRequest.param(KEY_PARAM, "").trim();
+        String query = restRequest.param(QUERY_PARAM, "").trim();
+        String sort = restRequest.param(SORT_PARAM, "").trim();
         Integer from = restRequest.paramAsInt(FROM_PARAM, 0);
         from = from < 0 ? 0 : from;
         Integer size = restRequest.paramAsInt(SIZE_PARAM, DEFAULT_SIZE);
@@ -83,13 +97,17 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
         );
 
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+        FetchSourceContext sourceContext = new FetchSourceContext(null, KEY_FIELD);
 
-        sourceBuilder.fetchSource(null, KEY_FIELD);
-        sourceBuilder.query(filteredQuery);
-        sourceBuilder.from(from);
-        sourceBuilder.size(size);
+        if(!fields.isEmpty()) {
+            fields = fields.replaceAll(",+", ",");
+            String[] fieldsList = fields.split(",");
+
+            sourceContext.includes(fieldsList);
+        }
 
         if(!sort.isEmpty()) {
+            sort = sort.replaceAll(",+", ",");
             String[] sortParts = sort.split(",");
 
             for(String sortField : sortParts) {
@@ -105,6 +123,11 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
                 sourceBuilder.sort(SortBuilders.fieldSort(sortField).order(sortOrder));
             }
         }
+
+        sourceBuilder.fetchSource(sourceContext);
+        sourceBuilder.query(filteredQuery);
+        sourceBuilder.from(from);
+        sourceBuilder.size(size);
 
         searchRequest.extraSource(sourceBuilder);
 
