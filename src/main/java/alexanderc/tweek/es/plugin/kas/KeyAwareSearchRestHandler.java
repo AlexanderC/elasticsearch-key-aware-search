@@ -34,6 +34,7 @@ import static org.elasticsearch.rest.RestRequest.Method.GET;
  *              &_limit=5
  *              &_offset=1
  *              &_filter=username:eistrati
+ *              &_terms=workforceid:243468
  *              &_sort=+employee.workforceid,-employee.company_number
  *              &_token=65a5f38bf80914019b55a03f78c4
  *              &_explain
