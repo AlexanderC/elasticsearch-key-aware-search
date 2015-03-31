@@ -31,9 +31,9 @@ All the entries would be filtered by the `_key` parameter provided using the `_k
 In order to find exact values `_terms` parameter should be user ([more info](http://www.elastic.co/guide/en/elasticsearch/guide/current/_finding_exact_values.html))
 
 Syntax:
-    - `_terms=uid:4146421` - find user with `uuid` equals to `4146421`
-    - `_terms=uid:(4146421|8768764)` - find user with `uuid` equals to `4146421` or `8768764`
-    - `_terms=uid:4146421,username=(john|james)` - find user with `uuid` equals to `4146421` and `username` equals to `john` or `james`
+- `_terms=uid:4146421` - find user with `uuid` equals to `4146421`
+- `_terms=uid:(4146421|8768764)` - find user with `uuid` equals to `4146421` or `8768764`
+- `_terms=uid:4146421,username=(john|james)` - find user with `uuid` equals to `4146421` and `username` equals to `john` or `james`
 
 Be aware: You could not search for `_kas_key` field!
 
