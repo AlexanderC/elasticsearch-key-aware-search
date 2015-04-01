@@ -1,5 +1,7 @@
 #!/bin/bash
 
+version=$1
+
 ./local_build
-./local_install
+./local_install ${version}
 ./local_elasticsearch-run
