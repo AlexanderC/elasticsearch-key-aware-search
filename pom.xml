@@ -6,7 +6,7 @@
 
   <groupId>alexanderc.tweek.es.plugin</groupId>
   <artifactId>es-kas</artifactId>
-  <version>0.1-SNAPSHOT</version>
+  <version>1.0.0b</version>
 
   <packaging>jar</packaging>
 

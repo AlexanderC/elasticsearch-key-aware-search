@@ -1,11 +1,21 @@
 #!/bin/bash
 
+version=$1
+
+if [ -z ${version} ]; then
+    version=1.0.0b
+fi
+
+
+
 # binary path
 name=es-kas
 plugin=/usr/local/Cellar/elasticsearch/1.3.4/bin/plugin
+
+echo "Using KAS version ${version}"
 
 echo "Trying to remove plugin..."
 $plugin --remove $name
 
 echo "Installing plugin..."
-$plugin --url file:./target/releases/es-kas-0.1-SNAPSHOT-plugin.zip --install $name --verbose
+$plugin --url file:./target/releases/es-kas-${version}-plugin.zip --install $name --verbose

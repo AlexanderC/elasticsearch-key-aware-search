@@ -49,6 +49,16 @@ Be aware: You could not search for `_kas_key` field!
 
 ### Installation instructions
 
-`bin/plugin --url https://github.com/AlexanderC/elasticsearch-key-aware-search/blob/master/builds/es-kas-0.1-SNAPSHOT-plugin.zip?raw=true --install es-kas --verbose`
+`bin/plugin --url https://github.com/AlexanderC/elasticsearch-key-aware-search/blob/master/builds/es-kas-1.0.0b-plugin.zip?raw=true --install es-kas --verbose`
 
 To uninstall it run: `bin/plugin --remove es-kas`
+
+### Changelog
+
+- v0.1-SNAPSHOT
+    - Created skeleton app
+    - implemented basic features
+
+- v1.0b
+    - Implemented terms search
+    - Plugin refactored

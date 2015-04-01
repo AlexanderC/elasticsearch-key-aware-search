@@ -1,4 +1,4 @@
-package alexanderc.tweek.es.plugin.kas;
+package alexanderc.tweek.es.plugin.kas.Response;
 
 import org.elasticsearch.common.text.StringAndBytesText;
 import org.elasticsearch.ElasticsearchException;
@@ -7,8 +7,8 @@ import org.elasticsearch.rest.*;
 /**
  * Created by AlexanderC on 10/28/14.
  */
-public class RestError extends BaseResponse {
-    public RestError(final String message, RestStatus status) {
+public class RestErrorResponse extends BaseResponse {
+    public RestErrorResponse(final String message, RestStatus status) {
         StringBuilder sb = new StringBuilder();
 
         String codePrefix = "2";
@@ -31,7 +31,7 @@ public class RestError extends BaseResponse {
         this.setStatus(status);
     }
 
-    public static RestError fromThrowable(Throwable throwable, Boolean debug) {
+    public static RestErrorResponse fromThrowable(Throwable throwable, Boolean debug) {
         StringBuilder error = new StringBuilder();
 
         if(debug) {
@@ -60,6 +60,6 @@ public class RestError extends BaseResponse {
             restStatus = ((ElasticsearchException) throwable).status();
         }
 
-        return new RestError(error.toString(), restStatus);
+        return new RestErrorResponse(error.toString(), restStatus);
     }
 }

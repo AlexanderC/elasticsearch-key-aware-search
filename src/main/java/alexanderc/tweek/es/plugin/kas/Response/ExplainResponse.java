@@ -1,4 +1,4 @@
-package alexanderc.tweek.es.plugin.kas;
+package alexanderc.tweek.es.plugin.kas.Response;
 
 import org.elasticsearch.common.text.StringAndBytesText;
 import org.elasticsearch.rest.RestStatus;

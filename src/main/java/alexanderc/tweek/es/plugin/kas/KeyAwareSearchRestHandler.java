@@ -1,5 +1,8 @@
 package alexanderc.tweek.es.plugin.kas;
 
+import alexanderc.tweek.es.plugin.kas.Response.ExplainResponse;
+import alexanderc.tweek.es.plugin.kas.Response.RestErrorResponse;
+import alexanderc.tweek.es.plugin.kas.Response.ResultResponse;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -7,14 +10,9 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.index.query.*;
 import org.elasticsearch.rest.*;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.elasticsearch.search.fetch.source.FetchSourceContext;
-import org.elasticsearch.search.sort.SortBuilders;
-import org.elasticsearch.search.sort.SortOrder;
-import java.util.ArrayList;
-import java.util.List;
+import alexanderc.tweek.es.plugin.kas.Exception.Exception;
 
 import static org.elasticsearch.rest.RestRequest.Method.GET;
 
@@ -65,7 +63,6 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
 
     public static final String INDEX_KEY = "index";
     public static final Integer DEFAULT_SIZE = 10;
-    public static final String KEY_FIELD = "_kas_key";
     public static final String ALL_INDEXES = "_all";
 
     @Inject
@@ -82,124 +79,52 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
 
         Boolean explain = restRequest.paramAsBoolean(EXPLAIN_PARAM, false);
         final Boolean debug = restRequest.paramAsBoolean(DEBUG_PARAM, false);
-        String fields = restRequest.param(FIELDS_PARAM, "").trim();
-        String key = restRequest.param(KEY_PARAM, "").trim();
-        String query = restRequest.param(QUERY_PARAM, "").trim();
-        String sort = restRequest.param(SORT_PARAM, "").trim();
-        String terms = restRequest.param(TERMS_PARAM, "").trim();
+        String fields = restRequest.param(FIELDS_PARAM, "");
+        String key = restRequest.param(KEY_PARAM, "");
+        String query = restRequest.param(QUERY_PARAM, "");
+        String sort = restRequest.param(SORT_PARAM, "");
+        String terms = restRequest.param(TERMS_PARAM, "");
         Integer from = restRequest.paramAsInt(FROM_PARAM, 0);
         from = from < 0 ? 0 : from;
         Integer size = restRequest.paramAsInt(SIZE_PARAM, DEFAULT_SIZE);
         size = size <= 0 ? DEFAULT_SIZE : size;
 
-        List<TermsFilterBuilder> termsFilterVector = new ArrayList<TermsFilterBuilder>();
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 
-        if(!terms.isEmpty()) {
-            terms = terms.replaceAll(",+", ",");
-            String[] termsList = terms.split(",");
+        try {
+            SourceBuilder sourceBuilder = new SourceBuilder(searchSourceBuilder, key);
+            sourceBuilder.setFrom(from);
+            sourceBuilder.setSize(size);
 
-            for(String termItem : termsList) {
-                Integer delimiterPos = termItem.indexOf(':');
-
-                if(-1 == delimiterPos) {
-                    restChannel.sendResponse(new RestError(
-                            "Missing term delimiter in " + termItem,
-                            RestStatus.UNPROCESSABLE_ENTITY
-                    ));
-                    return;
-                }
-
-                String termField = termItem.substring(0, delimiterPos);
-                String termValue = termItem.substring(delimiterPos + 1);
-
-                if(termField.equalsIgnoreCase(KEY_FIELD)) {
-                    restChannel.sendResponse(new RestError(
-                            "Searching for an internal term is forbidden",
-                            RestStatus.NOT_ACCEPTABLE
-                    ));
-                    return;
-                }
-
-                if(0 == termValue.indexOf('(') && termValue.length() - 1 == termValue.lastIndexOf(')')) {
-                    termValue = termValue.substring(1, termValue.length() - 1);
-
-                    String[] termValuesVector = termValue.split("\\|");
-
-                    List<String> cleanTermsFilterVector = new ArrayList<String>();
-
-                    for(String termValueItem : termValuesVector) {
-                        cleanTermsFilterVector.add(termValueItem.replaceAll("^\"(.+)\"$", "$1"));
-                    }
-
-                    termsFilterVector.add(FilterBuilders.inFilter(
-                            termField,
-                            cleanTermsFilterVector.toArray(new String[cleanTermsFilterVector.size()])
-                    ));
-                } else {
-                    termValue = termValue.replaceAll("^\"(.+)\"$", "$1");
-
-                    termsFilterVector.add(FilterBuilders.termsFilter(termField, termValue));
-                }
+            if(!sort.isEmpty()) {
+                sourceBuilder.addSort(sort);
             }
-        }
 
-        OrFilterBuilder searchKeyBuilder = FilterBuilders.orFilter(
-                FilterBuilders.missingFilter(KEY_FIELD),
-                FilterBuilders.termFilter(KEY_FIELD, ""),
-                FilterBuilders.termFilter(KEY_FIELD, key)
-        );
-
-        FilteredQueryBuilder filteredQuery = QueryBuilders.filteredQuery(
-                query.isEmpty() ? QueryBuilders.matchAllQuery() : QueryBuilders.queryString(query),
-                termsFilterVector.isEmpty() ? searchKeyBuilder : FilterBuilders.andFilter(
-                        searchKeyBuilder,
-                        FilterBuilders.andFilter(
-                                termsFilterVector.toArray(new TermsFilterBuilder[termsFilterVector.size()])
-                        )
-                )
-        );
-
-        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-        FetchSourceContext sourceContext = new FetchSourceContext(null, KEY_FIELD);
-
-        if(!fields.isEmpty()) {
-            fields = fields.replaceAll(",+", ",");
-            String[] fieldsList = fields.split(",");
-
-            sourceContext.includes(fieldsList);
-        }
-
-        if(!sort.isEmpty()) {
-            sort = sort.replaceAll(",+", ",");
-            String[] sortParts = sort.split(",");
-
-            for(String sortField : sortParts) {
-                SortOrder sortOrder = SortOrder.ASC;
-
-                sortField = sortField.replaceAll("[^a-zA-Z0-9_\\-\\.]+", "");
-
-                if(0 == sortField.indexOf('-')) {
-                    sortField = sortField.substring(1);
-                    sortOrder = SortOrder.DESC;
-                }
-
-                sourceBuilder.sort(SortBuilders.fieldSort(sortField).order(sortOrder));
+            if(!terms.isEmpty()) {
+                sourceBuilder.addTerms(terms);
             }
-        }
 
-        sourceBuilder.fetchSource(sourceContext);
-        sourceBuilder.query(filteredQuery);
-        sourceBuilder.from(from);
-        sourceBuilder.size(size);
+            if(!fields.isEmpty()) {
+                sourceBuilder.addFields(fields);
+            }
 
-        searchRequest.extraSource(sourceBuilder);
+            if(!query.isEmpty()) {
+                sourceBuilder.setQuery(query);
+            }
 
-        if(explain) {
-            restChannel.sendResponse(new ExplainResponse(sourceBuilder));
+            searchSourceBuilder = sourceBuilder.build();
+        } catch(Exception e) {
+            restChannel.sendResponse(new RestErrorResponse(e.getMessage(), RestStatus.INTERNAL_SERVER_ERROR));
             return;
         }
 
-        // allow accessing from inner class
+        if(explain) {
+            restChannel.sendResponse(new ExplainResponse(searchSourceBuilder));
+            return;
+        }
+
+        searchRequest.extraSource(searchSourceBuilder);
+
         final Integer resultFrom = from;
         final Integer resultSize = size;
 
@@ -207,7 +132,7 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
             @Override
             public void onResponse(SearchResponse searchResponse) {
                 if(!searchResponse.status().equals(RestStatus.OK)) {
-                    restChannel.sendResponse(new RestError("Search failed.", RestStatus.INTERNAL_SERVER_ERROR));
+                    restChannel.sendResponse(new RestErrorResponse("Search failed", RestStatus.INTERNAL_SERVER_ERROR));
                 } else {
                     restChannel.sendResponse(new ResultResponse(searchResponse, resultFrom, resultSize));
                 }
@@ -215,7 +140,7 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
 
             @Override
             public void onFailure(Throwable throwable) {
-                restChannel.sendResponse(RestError.fromThrowable(throwable, debug));
+                restChannel.sendResponse(RestErrorResponse.fromThrowable(throwable, debug));
             }
         });
     }

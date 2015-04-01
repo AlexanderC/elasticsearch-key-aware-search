@@ -1,7 +1,6 @@
-package alexanderc.tweek.es.plugin.kas;
+package alexanderc.tweek.es.plugin.kas.Response;
 
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.text.StringAndBytesText;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
