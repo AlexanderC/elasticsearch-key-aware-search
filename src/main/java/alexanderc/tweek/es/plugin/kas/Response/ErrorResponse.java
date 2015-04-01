@@ -7,8 +7,8 @@ import org.elasticsearch.rest.*;
 /**
  * Created by AlexanderC on 10/28/14.
  */
-public class RestErrorResponse extends BaseResponse {
-    public RestErrorResponse(final String message, RestStatus status) {
+public class ErrorResponse extends BaseResponse {
+    public ErrorResponse(final String message, RestStatus status) {
         StringBuilder sb = new StringBuilder();
 
         String codePrefix = "2";
@@ -31,7 +31,7 @@ public class RestErrorResponse extends BaseResponse {
         this.setStatus(status);
     }
 
-    public static RestErrorResponse fromThrowable(Throwable throwable, Boolean debug) {
+    public static ErrorResponse fromThrowable(Throwable throwable, Boolean debug) {
         StringBuilder error = new StringBuilder();
 
         if(debug) {
@@ -60,6 +60,6 @@ public class RestErrorResponse extends BaseResponse {
             restStatus = ((ElasticsearchException) throwable).status();
         }
 
-        return new RestErrorResponse(error.toString(), restStatus);
+        return new ErrorResponse(error.toString(), restStatus);
     }
 }

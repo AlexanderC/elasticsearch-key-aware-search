@@ -1,7 +1,7 @@
 package alexanderc.tweek.es.plugin.kas;
 
 import alexanderc.tweek.es.plugin.kas.Response.ExplainResponse;
-import alexanderc.tweek.es.plugin.kas.Response.RestErrorResponse;
+import alexanderc.tweek.es.plugin.kas.Response.ErrorResponse;
 import alexanderc.tweek.es.plugin.kas.Response.ResultResponse;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.search.SearchRequest;
@@ -114,7 +114,7 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
 
             searchSourceBuilder = sourceBuilder.build();
         } catch(Exception e) {
-            restChannel.sendResponse(new RestErrorResponse(e.getMessage(), RestStatus.INTERNAL_SERVER_ERROR));
+            restChannel.sendResponse(new ErrorResponse(e.getMessage(), RestStatus.INTERNAL_SERVER_ERROR));
             return;
         }
 
@@ -132,7 +132,7 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
             @Override
             public void onResponse(SearchResponse searchResponse) {
                 if(!searchResponse.status().equals(RestStatus.OK)) {
-                    restChannel.sendResponse(new RestErrorResponse("Search failed", RestStatus.INTERNAL_SERVER_ERROR));
+                    restChannel.sendResponse(new ErrorResponse("Search failed", RestStatus.INTERNAL_SERVER_ERROR));
                 } else {
                     restChannel.sendResponse(new ResultResponse(searchResponse, resultFrom, resultSize));
                 }
@@ -140,7 +140,7 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
 
             @Override
             public void onFailure(Throwable throwable) {
-                restChannel.sendResponse(RestErrorResponse.fromThrowable(throwable, debug));
+                restChannel.sendResponse(ErrorResponse.fromThrowable(throwable, debug));
             }
         });
     }
