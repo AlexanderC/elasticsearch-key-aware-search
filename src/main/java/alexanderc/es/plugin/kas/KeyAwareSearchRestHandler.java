@@ -1,8 +1,9 @@
-package alexanderc.tweek.es.plugin.kas;
+package alexanderc.es.plugin.kas;
 
-import alexanderc.tweek.es.plugin.kas.Response.ExplainResponse;
-import alexanderc.tweek.es.plugin.kas.Response.ErrorResponse;
-import alexanderc.tweek.es.plugin.kas.Response.ResultResponse;
+import alexanderc.es.plugin.kas.Exception.Exception;
+import alexanderc.es.plugin.kas.Response.ErrorResponse;
+import alexanderc.es.plugin.kas.Response.ExplainResponse;
+import alexanderc.es.plugin.kas.Response.ResultResponse;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -12,7 +13,6 @@ import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.rest.*;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
-import alexanderc.tweek.es.plugin.kas.Exception.Exception;
 
 import static org.elasticsearch.rest.RestRequest.Method.GET;
 
@@ -73,7 +73,7 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
     }
 
     @Override
-    protected void handleRequest(RestRequest restRequest, final RestChannel restChannel, Client client) throws Exception {
+    protected void handleRequest(RestRequest restRequest, final RestChannel restChannel, Client client) throws alexanderc.es.plugin.kas.Exception.Exception {
         String[] indices = Strings.splitStringByCommaToArray(restRequest.param(INDEX_KEY, ALL_INDEXES));
         SearchRequest searchRequest = new SearchRequest(indices);
 

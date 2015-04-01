@@ -1,4 +1,4 @@
-package alexanderc.tweek.es.plugin.kas;
+package alexanderc.es.plugin.kas;
 
 import org.elasticsearch.common.inject.AbstractModule;
 

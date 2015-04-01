@@ -1,4 +1,4 @@
-package alexanderc.tweek.es.plugin.kas.Response;
+package alexanderc.es.plugin.kas.Response;
 
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.text.StringAndBytesText;

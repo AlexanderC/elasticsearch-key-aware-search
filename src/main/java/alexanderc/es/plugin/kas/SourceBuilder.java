@@ -1,10 +1,10 @@
-package alexanderc.tweek.es.plugin.kas;
+package alexanderc.es.plugin.kas;
 
-import alexanderc.tweek.es.plugin.kas.Exception.*;
+import alexanderc.es.plugin.kas.Exception.*;
+import alexanderc.es.plugin.kas.Exception.Exception;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.source.FetchSourceContext;
-import alexanderc.tweek.es.plugin.kas.Exception.Exception;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 
@@ -46,7 +46,7 @@ public class SourceBuilder {
         );
     }
 
-    public SourceBuilder addTerms(String terms) throws Exception {
+    public SourceBuilder addTerms(String terms) throws alexanderc.es.plugin.kas.Exception.Exception {
         terms = terms.replaceAll(",+", ",");
         String[] termsList = terms.split(",");
 

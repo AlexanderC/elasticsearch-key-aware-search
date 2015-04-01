@@ -1,4 +1,4 @@
-package alexanderc.tweek.es.plugin.kas.Exception;
+package alexanderc.es.plugin.kas.Exception;
 
 /**
  * Created by AlexanderC on 4/1/15.
