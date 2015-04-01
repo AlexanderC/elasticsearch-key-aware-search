@@ -2,6 +2,8 @@ package alexanderc.es.plugin.kas;
 
 import alexanderc.es.plugin.kas.Exception.*;
 import alexanderc.es.plugin.kas.Exception.Exception;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.common.Strings;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.source.FetchSourceContext;
@@ -38,19 +40,8 @@ public class SourceBuilder {
         return this;
     }
 
-    protected OrFilterBuilder getKasInternalsFilter(String kasKey) {
-        return FilterBuilders.orFilter(
-                FilterBuilders.missingFilter(KEY_FIELD),
-                FilterBuilders.termFilter(KEY_FIELD, ""),
-                FilterBuilders.termFilter(KEY_FIELD, kasKey)
-        );
-    }
-
-    public SourceBuilder addTerms(String terms) throws alexanderc.es.plugin.kas.Exception.Exception {
-        terms = terms.replaceAll(",+", ",");
-        String[] termsList = terms.split(",");
-
-        return this.addTerms(termsList);
+    public SourceBuilder addTerms(String terms) throws Exception {
+        return this.addTerms(this.cSplit(terms));
     }
 
     public SourceBuilder addTerms(String[] termsList) throws Exception {
@@ -71,7 +62,7 @@ public class SourceBuilder {
             if(0 == termValue.indexOf('(') && termValue.length() - 1 == termValue.lastIndexOf(')')) {
                 termValue = termValue.substring(1, termValue.length() - 1);
 
-                String[] termValuesVector = termValue.split("\\|");
+                String[] termValuesVector = this.split(termValue, "|");
 
                 List<String> cleanTermsFilterVector = new ArrayList<String>();
 
@@ -94,10 +85,7 @@ public class SourceBuilder {
     }
 
     public SourceBuilder addSort(String sort) {
-        sort = sort.replaceAll(",+", ",");
-        String[] sortParts = sort.split(",");
-
-        return this.addSortParts(sortParts);
+         return this.addSortParts(this.cSplit(sort));
     }
 
     public SourceBuilder addSortParts(String[] sortParts) {
@@ -123,10 +111,7 @@ public class SourceBuilder {
     }
 
     public SourceBuilder addFields(String fields) {
-        fields = fields.replaceAll(",+", ",");
-        String[] fieldsList = fields.split(",");
-
-        return this.addFields(fieldsList);
+        return this.addFields(this.cSplit(fields));
     }
 
     public SourceBuilder addFields(String[] fieldsList) {
@@ -144,7 +129,7 @@ public class SourceBuilder {
         return this;
     }
 
-    protected SearchSourceBuilder build() {
+    public SearchSourceBuilder build() {
         FilteredQueryBuilder filteredQuery = QueryBuilders.filteredQuery(
                 this.queryBuilder,
                 this.terms.isEmpty() ? this.filterBuilder : FilterBuilders.andFilter(
@@ -159,5 +144,36 @@ public class SourceBuilder {
         this.sourceBuilder.query(filteredQuery);
 
         return this.sourceBuilder;
+    }
+
+    public SearchRequest createSearchRequest(String indexes) {
+        return this.createSearchRequest(this.cSplit(indexes));
+    }
+
+    public SearchRequest createSearchRequest(String[] indexes) {
+        SearchRequest searchRequest = new SearchRequest(indexes);
+        searchRequest.extraSource(this.build());
+
+        return searchRequest;
+    }
+
+    public static SourceBuilder create(String kasKey) {
+        return new SourceBuilder(new SearchSourceBuilder(), kasKey);
+    }
+
+    protected String[] cSplit(String raw) {
+        return Strings.splitStringByCommaToArray(raw);
+    }
+
+    protected String[] split(String raw, String delimiter) {
+        return Strings.split(raw, delimiter);
+    }
+
+    protected OrFilterBuilder getKasInternalsFilter(String kasKey) {
+        return FilterBuilders.orFilter(
+                FilterBuilders.missingFilter(KEY_FIELD),
+                FilterBuilders.termFilter(KEY_FIELD, ""),
+                FilterBuilders.termFilter(KEY_FIELD, kasKey)
+        );
     }
 }

@@ -5,14 +5,12 @@ import alexanderc.es.plugin.kas.Response.ErrorResponse;
 import alexanderc.es.plugin.kas.Response.ExplainResponse;
 import alexanderc.es.plugin.kas.Response.ResultResponse;
 import org.elasticsearch.action.ActionListener;
-import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.rest.*;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import static org.elasticsearch.rest.RestRequest.Method.GET;
 
@@ -74,25 +72,24 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
 
     @Override
     protected void handleRequest(RestRequest restRequest, final RestChannel restChannel, Client client) throws alexanderc.es.plugin.kas.Exception.Exception {
-        String[] indices = Strings.splitStringByCommaToArray(restRequest.param(INDEX_KEY, ALL_INDEXES));
-        SearchRequest searchRequest = new SearchRequest(indices);
-
-        Boolean explain = restRequest.paramAsBoolean(EXPLAIN_PARAM, false);
+        final Boolean explain = restRequest.paramAsBoolean(EXPLAIN_PARAM, false);
         final Boolean debug = restRequest.paramAsBoolean(DEBUG_PARAM, false);
-        String fields = restRequest.param(FIELDS_PARAM, "");
-        String key = restRequest.param(KEY_PARAM, "");
-        String query = restRequest.param(QUERY_PARAM, "");
-        String sort = restRequest.param(SORT_PARAM, "");
-        String terms = restRequest.param(TERMS_PARAM, "");
+
+        String indexes = restRequest.param(INDEX_KEY, ALL_INDEXES).trim();
+        String fields = restRequest.param(FIELDS_PARAM, "").trim();
+        String key = restRequest.param(KEY_PARAM, "").trim();
+        String query = restRequest.param(QUERY_PARAM, "").trim();
+        String sort = restRequest.param(SORT_PARAM, "").trim();
+        String terms = restRequest.param(TERMS_PARAM, "").trim();
+
         Integer from = restRequest.paramAsInt(FROM_PARAM, 0);
         from = from < 0 ? 0 : from;
         Integer size = restRequest.paramAsInt(SIZE_PARAM, DEFAULT_SIZE);
         size = size <= 0 ? DEFAULT_SIZE : size;
 
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        SourceBuilder sourceBuilder = SourceBuilder.create(key);
 
         try {
-            SourceBuilder sourceBuilder = new SourceBuilder(searchSourceBuilder, key);
             sourceBuilder.setFrom(from);
             sourceBuilder.setSize(size);
 
@@ -111,24 +108,20 @@ public class KeyAwareSearchRestHandler extends BaseRestHandler {
             if(!query.isEmpty()) {
                 sourceBuilder.setQuery(query);
             }
-
-            searchSourceBuilder = sourceBuilder.build();
         } catch(Exception e) {
             restChannel.sendResponse(new ErrorResponse(e.getMessage(), RestStatus.INTERNAL_SERVER_ERROR));
             return;
         }
 
         if(explain) {
-            restChannel.sendResponse(new ExplainResponse(searchSourceBuilder));
+            restChannel.sendResponse(new ExplainResponse(sourceBuilder.build()));
             return;
         }
-
-        searchRequest.extraSource(searchSourceBuilder);
 
         final Integer resultFrom = from;
         final Integer resultSize = size;
 
-        client.search(searchRequest, new ActionListener<SearchResponse>() {
+        client.search(sourceBuilder.createSearchRequest(indexes), new ActionListener<SearchResponse>() {
             @Override
             public void onResponse(SearchResponse searchResponse) {
                 if(!searchResponse.status().equals(RestStatus.OK)) {
