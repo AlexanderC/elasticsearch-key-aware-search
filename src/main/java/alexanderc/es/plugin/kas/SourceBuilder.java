@@ -153,6 +153,7 @@ public class SourceBuilder {
     public SearchRequest createSearchRequest(String[] indexes) {
         SearchRequest searchRequest = new SearchRequest(indexes);
         searchRequest.extraSource(this.build());
+        searchRequest.listenerThreaded(false); // TODO: do we need this?
 
         return searchRequest;
     }
