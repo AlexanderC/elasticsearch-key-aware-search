@@ -62,7 +62,7 @@ public class SourceBuilder {
             if(0 == termValue.indexOf('(') && termValue.length() - 1 == termValue.lastIndexOf(')')) {
                 termValue = termValue.substring(1, termValue.length() - 1);
 
-                String[] termValuesVector = this.split(termValue, "|");
+                String[] termValuesVector = this.split(termValue, '|');
 
                 List<String> cleanTermsFilterVector = new ArrayList<String>();
 
@@ -165,8 +165,8 @@ public class SourceBuilder {
         return Strings.splitStringByCommaToArray(raw);
     }
 
-    protected String[] split(String raw, String delimiter) {
-        return Strings.split(raw, delimiter);
+    protected String[] split(String raw, char delimiter) {
+        return Strings.splitStringToArray(raw, delimiter);
     }
 
     protected OrFilterBuilder getKasInternalsFilter(String kasKey) {
